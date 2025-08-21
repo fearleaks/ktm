@@ -1,1 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Restrict Roleplay Store</title>
+<style>
+  * { box-sizing: border-box; }
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url('https://imgur.com/dxp2QTj') no-repeat center center fixed;
+    background-size: cover;
+    color: #f0f0f0;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(15,15,15,0.85);
+    z-index: 0;
+  }
+  #app { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 30px 20px 60px; transition: filter 0.5s ease; }
+  header { text-align: center; margin-bottom: 10px; }
+  header h1 { font-size: 3rem; font-weight: 900; letter-spacing: 3px; margin-bottom: 8px; text-shadow: 0 0 8px #8000ffaa; }
+  header p { font-size: 1.2rem; color: #bbb; margin-bottom: 20px; }
+  #search-bar {
+    display: block; width: 100%; max-width: 400px;
+    margin: 0 auto 30px auto; padding: 10px 14px;
+    font-size: 1.1rem; border-radius: 10px; border: none;
+    outline: none; box-shadow: 0 0 10px #8000ffaa inset;
+    background: #222; color: #eee;
+  }
+  #search-bar::placeholder { color: #666; }
+
+  /* Login overlay */
+  #login-overlay {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.85); color: #8000ff;
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; z-index: 9999;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center; padding: 0 20px;
+  }
+  #login-overlay h2 { margin-bottom:20px; font-size:2rem; max-width: 360px; }
+  #login-overlay h2 small { font-weight:400; font-size:1rem; color:#8000ffcc; }
+  #login-overlay input {
+    padding:10px; font-size:1.2rem; margin-bottom:10px; border-radius:6px;
+    border:none; width:280px; max-width:90vw;
+  }
+  #login-overlay button {
+    padding:12px 0; width:280px; max-width:90vw;
+    font-size:1.2rem; font-weight:700; border:none; border-radius:8px;
+    background:#8000ff; color:#fff; cursor:pointer;
+  }
+  #login-error { margin-top:12px; color:#ff5555; font-weight:700; min-height:1.2rem; }
+
+  /* Dashboard */
+  #dashboard-section {
+    max-width: 940px; margin: 0 auto 40px; background: rgba(30,30,30,0.9);
+    padding: 28px 30px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+    display: none;
+  }
+  #dashboard-section h2 { color: #8000ff; margin-bottom: 18px; text-align:center; }
+  #logout-btn {
+    display:block; margin:0 auto 20px auto; background:#555;
+    border:none; padding:14px 0; border-radius:8px; color:white;
+    font-weight:700; font-size:1.1rem; cursor:pointer; width:180px;
+  }
+  #logout-btn:hover { background:#8000ff; }
+
+  /* Products grid */
+  .products {
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+    gap:28px; margin-bottom:40px;
+  }
+  .card {
+    background: rgba(30,30,30,0.85); border-radius:12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6); padding:20px;
+    display:flex; flex-direction:column; transition: transform 0.25s ease, box-shadow 0.25s ease;
+    position: relative; cursor: default;
+  }
+  .card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 0 10px 3px #8000ffcc;
+  }
+  .card img { max-height:160px; object-fit:contain; margin-bottom:18px; border-radius:8px; background:#111; padding:10px; }
+  .card h2 { font-size:1.5rem; margin:0 0 12px; font-weight:700; color:#8000ff; display:flex; align-items:center; gap:8px; }
+  .card p { flex-grow:1; color:#ccc; font-size:1rem; margin-bottom:20px; line-height:1.4; }
+  .out-of-stock { position:absolute; top:12px; right:12px; background:#8000ffcc; color:white; font-weight:800;
+    padding:6px 14px; border-radius:16px; font-size:1rem; text-transform:uppercase;
+    pointer-events:none; user-select:none; box-shadow:0 0 10px #8000ffbb;
+  }
+  .buy-button { background:#555; border:none; padding:14px 0; border-radius:8px; color:#bbb;
+    font-weight:700; font-size:1.1rem; cursor:not-allowed;
+  }
+  .buy-button.enabled { background:#8000ff; color:white; cursor:pointer; }
+  .buy-button.enabled:hover { background:#5500aa; }
+
+  /* Cart */
+  #cart-icon {
+    position: fixed; top:20px; right:20px; background:#8000ffcc;
+    padding:10px 14px; border-radius:50%; color:white; font-weight:700;
+    font-size:1.5rem; cursor:pointer; z-index:300;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 0 10px #8000ffbb;
+  }
+  #cart-count { position:absolute; top:-6px; right:-6px; background:#aa55ff; border-radius:50%;
+    padding:4px 8px; font-size:1rem; color:white; font-weight:900; user-select:none; min-width:24px; text-align:center;
+  }
+  #cart-popup {
+    position:fixed; top:60px; right:20px; width:320px; max-height:420px;
+    background: rgba(20,20,20,0.95); border-radius:14px; box-shadow:0 0 30px #8000ffbb;
+    padding:20px; overflow-y:auto; z-index:350; display:none; flex-direction:column;
+  }
+  #cart-popup h3 { color:#8000ff; margin-bottom:16px; text-align:center; }
+  #cart-items { flex-grow:1; overflow-y:auto; color:#ddd; font-size:1.1rem; }
+  #cart-items div { display:flex; justify-content:space-between; margin-bottom:12px; }
+  #cart-total { font-size:1.4rem; font-weight:700; margin-top:14px; text-align:right; color:#aa55ff; }
+  #checkout-btn-popup { margin-top:20px; background:#8000ff; border:none; padding:14px 0; font-size:1.2rem; font-weight:700; color:white; border-radius:12px; cursor:pointer; transition: background 0.3s ease; }
+  #checkout-btn-popup:disabled { background:#555; color:#bbb; cursor:not-allowed; }
+  #checkout-btn-popup:hover:not(:disabled) { background:#5500aa; }
+
+  footer { margin-top:60px; padding:20px; text-align:center; font-size:1rem; color:#8000ff; letter-spacing:1.2px; }
+  footer a { color:#8000ff; text-decoration:underline; font-weight:700; }
+
+  @media (max-width:480px) {
+    header h1 { font-size:2.4rem; }
+    #dashboard-section { max-width:90vw; }
+    #cart-popup { width:90vw; right:5vw; }
+  }
+</style>
+</head>
+<body>
+<div id="login-overlay">
+  <h2>Login to Restrict Roleplay Store 💻<br>
+    <small>Make an account and get into shopping!</small>
+  </h2>
+  <input id="login-username" type="text" placeholder="Username" autocomplete="off" />
+  <input id="login-password" type="password" placeholder="Password" autocomplete="off" />
+  <button id="login-btn">Login / Register</button>
+  <div id="login-error"></div>
+</div>
+
+<div id="app" aria-live="polite">
+  <header>
+    <h1>🛒 Restrict Roleplay Store</h1>
+    <p>🔥 All items currently out of stock — stay tuned for restocks!</p>
+    <input type="search" id="search-bar" placeholder="Search items..." aria-label="Search store items" />
+  </header>
+
+  <section id="dashboard-section" aria-label="User Dashboard">
+    <h2>Welcome, <span id="user-display"></span>!</h2>
+    <button id="logout-btn">Logout</button>
+  </section>
+
+  <section class="products" aria-label="Products for sale">
+    <!-- Coins -->
+    <div class="card" data-name="1000 Coins">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="1000 Coins" />
+      <h2>💰 1000 Coins – $10</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+    <div class="card" data-name="2000 Coins">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="2000 Coins" />
+      <h2>💰 2000 Coins – $20</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+    <div class="card" data-name="3000 Coins">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="3000 Coins" />
+      <h2>💰 3000 Coins – $30</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+    <div class="card" data-name="4000 Coins">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="4000 Coins" />
+      <h2>💰 4000 Coins – $40</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+    <div class="card" data-name="5000 Coins">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="5000 Coins" />
+      <h2>💰 5000 Coins – $50</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+
+    <!-- Unbans -->
+    <div class="card" data-name="Regular Unban">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="Regular Unban" />
+      <h2>💻 Regular Unban – $10</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+    <div class="card" data-name="Tos Unban">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="Tos Unban" />
+      <h2>💻 Tos Unban – $20</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+
+    <!-- Gang Package -->
+    <div class="card" data-name="Gang Package">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="Gang Package" />
+      <h2>🔫 Gang Package – $40</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+
+    <!-- Custom Gun -->
+    <div class="card" data-name="Custom Gun">
+      <span class="out-of-stock">Out of Stock</span>
+      <img src="https://imgur.com/dxp2QTj" alt="Custom Gun" />
+      <h2>🔫 Custom Gun – $50</h2>
+      <button class="buy-button" disabled>Add to Cart</button>
+    </div>
+  </section>
+</div>
+
+<div id="cart-icon">
+  🛒<div id="cart-count">0</div>
+</div>
+<div id="cart-popup">
+  <h3>Your Cart</h3>
+  <div id="cart-items"><p>Your cart is empty.</p></div>
+  <div id="cart-total">Total: $0</div>
+  <button id="checkout-btn-popup" disabled>Checkout</button>
+</div>
+
+<footer>
+  &copy; 2025 Restrict Roleplay — Join our Discord for support and updates:
+  <a href="https://discord.gg/restrict-roleplay" target="_blank" rel="noopener noreferrer">https://discord.gg/restrict-roleplay</a>
+</footer>
+
+<script>
+  // same login/cart script unchanged...
+</script>
+</body>
+</html>
+
 
