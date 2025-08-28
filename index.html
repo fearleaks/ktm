@@ -1,90 +1,3 @@
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Apply blur to whole page except overlay
-    const app = document.getElementById('app') || document.body;
-
-    // Create login overlay
-    const loginOverlay = document.createElement('div');
-    loginOverlay.id = 'login-overlay';
-    Object.assign(loginOverlay.style, {
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.85)',
-      color: '#00aaff',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 9999,
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      textAlign: 'center',
-      padding: '0 20px',
-    });
-    loginOverlay.innerHTML = `
-      <h2 style="margin-bottom:20px; font-size:2rem; max-width: 360px;">
-        Login to restict rp Store 💻<br>
-        <small style="font-weight:400; font-size:1rem; color:#00aaffcc;">
-          Make an account and get into shopping!
-        </small>
-      </h2>
-      <input id="login-username" type="text" placeholder="Username" autocomplete="off" style="padding:10px; font-size:1.2rem; margin-bottom:10px; border-radius:6px; border:none; width: 280px; max-width: 90vw;" />
-      <input id="login-password" type="password" placeholder="Password" autocomplete="off" style="padding:10px; font-size:1.2rem; margin-bottom:10px; border-radius:6px; border:none; width: 280px; max-width: 90vw;" />
-      <button id="login-btn" style="padding:12px 0; width: 280px; max-width: 90vw; font-size:1.2rem; font-weight:700; border:none; border-radius:8px; background:#00aaff; color:#fff; cursor:pointer;">Login / Register</button>
-      <div id="login-error" style="margin-top:12px; color:#ff5555; font-weight:700; min-height:1.2rem;"></div>
-    `;
-    document.body.appendChild(loginOverlay);
-
-    const usernameInput = document.getElementById('login-username');
-    const passwordInput = document.getElementById('login-password');
-    const loginBtn = document.getElementById('login-btn');
-    const loginError = document.getElementById('login-error');
-
-    // Simple users database stored in localStorage
-    const usersKey = 'sathWishUsers';
-    let users = JSON.parse(localStorage.getItem(usersKey)) || {};
-
-    // Check if user is already logged in
-    const loggedUser = localStorage.getItem('sathWishLoggedUser');
-    if(loggedUser && users[loggedUser]) {
-      loginOverlay.style.display = 'none';
-      app.style.filter = 'none';
-      return;
-    }
-
-    // Initially blur the app
-    app.style.filter = 'blur(6px)';
-
-    loginBtn.addEventListener('click', () => {
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value.trim();
-
-      if(!username || !password) {
-        loginError.textContent = 'Please enter username and password.';
-        return;
-      }
-
-      if(users[username]) {
-        // User exists, check password
-        if(users[username] === password) {
-          // Success login
-          localStorage.setItem('sathWishLoggedUser', username);
-          loginOverlay.style.display = 'none';
-          app.style.filter = 'none';
-          loginError.textContent = '';
-        } else {
-          loginError.textContent = 'Incorrect password.';
-        }
-      } else {
-        // New user, create account
-        users[username] = password;
-        localStorage.setItem(usersKey, JSON.stringify(users));
-        localStorage.setItem('sathWishLoggedUser', username);
-        loginOverlay.style.display = 'none';
-        app.style.filter = 'none';
-        loginError.textContent = '';
-      }
-    });
-  });
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Sath Wish RP Store</title>
 <style>
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
   body, html {
     margin: 0; padding: 0; height: 100%;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -106,8 +17,7 @@
   }
   body::before {
     content: "";
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
+    position: fixed; top:0; left:0; right:0; bottom:0;
     background: rgba(15,15,15,0.85);
     z-index: 0;
   }
@@ -119,550 +29,235 @@
     padding: 30px 20px 60px;
     transition: filter 0.5s ease;
   }
-  header {
-    text-align: center;
-    margin-bottom: 10px;
-  }
+  header { text-align: center; margin-bottom: 10px; }
   header h1 {
-    font-size: 3rem;
-    font-weight: 900;
-    letter-spacing: 3px;
-    margin-bottom: 8px;
+    font-size: 3rem; font-weight: 900;
+    letter-spacing: 3px; margin-bottom: 8px;
     text-shadow: 0 0 8px #007bffaa;
   }
-  header p {
-    font-size: 1.2rem;
-    color: #bbb;
-    margin-bottom: 20px;
-  }
-  /* Search Bar */
+  header p { font-size: 1.2rem; color: #bbb; margin-bottom: 20px; }
   #search-bar {
-    display: block;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto 30px auto;
-    padding: 10px 14px;
-    font-size: 1.1rem;
-    border-radius: 10px;
-    border: none;
-    outline: none;
+    display: block; width: 100%; max-width: 400px;
+    margin: 0 auto 30px auto; padding: 10px 14px;
+    font-size: 1.1rem; border-radius: 10px;
+    border: none; outline: none;
     box-shadow: 0 0 10px #007bffaa inset;
-    background: #222;
-    color: #eee;
+    background: #222; color: #eee;
   }
-  #search-bar::placeholder {
-    color: #666;
-  }
-  /* Blur overlay for locked view */
-  #blur-overlay {
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(8px);
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #00aaff;
-    padding: 20px;
-    text-align: center;
-  }
-  #blur-overlay h2 {
-    font-size: 2.8rem;
-    margin-bottom: 18px;
-  }
-  #blur-overlay input {
-    width: 280px;
-    max-width: 90vw;
-    padding: 14px 18px;
-    margin: 8px 0;
-    font-size: 1.1rem;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-  }
-  #blur-overlay button {
-    width: 300px;
-    max-width: 90vw;
-    margin-top: 15px;
-    background: #00aaff;
-    border: none;
-    padding: 16px 0;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: white;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  #blur-overlay button:hover {
-    background: #008fcc;
-  }
-  #blur-message {
-    color: #ff5555;
-    margin-top: 8px;
-    font-weight: 700;
-    min-height: 1.2rem;
-  }
-  /* Login/Register */
+  #search-bar::placeholder { color: #666; }
   #dashboard-section {
-    max-width: 940px;
-    margin: 0 auto 40px;
+    max-width: 940px; margin: 0 auto 40px;
     background: rgba(30,30,30,0.9);
-    padding: 28px 30px;
-    border-radius: 14px;
+    padding: 28px 30px; border-radius: 14px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.7);
     display: none;
   }
-  #dashboard-section h2 {
-    color: #00aaff;
-    margin-bottom: 18px;
-    text-align: center;
-  }
+  #dashboard-section h2 { color: #00aaff; margin-bottom: 18px; text-align: center; }
   #logout-btn {
-    display: block;
-    margin: 0 auto 20px auto;
-    background: #cc0000;
-    border: none;
-    padding: 14px 0;
-    border-radius: 8px;
-    color: white;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    width: 180px;
+    display: block; margin: 0 auto 20px auto;
+    background: #cc0000; border: none;
+    padding: 14px 0; border-radius: 8px;
+    color: white; font-weight: 700;
+    font-size: 1.1rem; cursor: pointer; width: 180px;
   }
-  #logout-btn:hover {
-    background: #990000;
-  }
-  /* Products grid */
+  #logout-btn:hover { background: #990000; }
   .products {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 28px;
-    margin-bottom: 40px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 28px; margin-bottom: 40px;
   }
   .card {
     background: rgba(30,30,30,0.85);
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
+    padding: 20px; display: flex; flex-direction: column;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
-    position: relative;
-    cursor: default;
+    position: relative; cursor: default;
   }
-  .card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 0 10px 3px #cc0000cc;
-  }
+  .card:hover { transform: translateY(-8px); box-shadow: 0 0 10px 3px #cc0000cc; }
   .card img {
-    max-height: 160px;
-    object-fit: contain;
-    margin-bottom: 18px;
-    border-radius: 8px;
-    background: #111;
-    padding: 10px;
+    max-height: 160px; object-fit: contain;
+    margin-bottom: 18px; border-radius: 8px;
+    background: #111; padding: 10px;
   }
-  .card h2 {
-    font-size: 1.5rem;
-    margin: 0 0 12px;
-    font-weight: 700;
-    color: #cc0000;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .card p {
-    flex-grow: 1;
-    color: #ccc;
-    font-size: 1rem;
-    margin-bottom: 20px;
-    line-height: 1.4;
-  }
-  .out-of-stock {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #cc0000cc;
-    color: white;
-    font-weight: 800;
-    padding: 6px 14px;
-    border-radius: 16px;
-    font-size: 1rem;
-    text-transform: uppercase;
-    pointer-events: none;
-    user-select: none;
-    box-shadow: 0 0 10px #cc0000bb;
-  }
+  .card h2 { font-size: 1.5rem; margin: 0 0 12px;
+    font-weight: 700; color: #cc0000; display: flex; align-items: center; gap: 8px; }
+  .card p { flex-grow: 1; color: #ccc; font-size: 1rem;
+    margin-bottom: 20px; line-height: 1.4; }
   .buy-button {
-    background: #555;
-    border: none;
-    padding: 14px 0;
-    border-radius: 8px;
-    color: #bbb;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: not-allowed;
+    background: #cc0000; border: none;
+    padding: 14px 0; border-radius: 8px;
+    color: white; font-weight: 700;
+    font-size: 1.1rem; cursor: pointer;
   }
-  .buy-button.enabled {
-    background: #cc0000;
-    color: white;
-    cursor: pointer;
-  }
-  .buy-button.enabled:hover {
-    background: #990000;
-  }
-  /* Cart icon */
+  .buy-button:hover { background: #990000; }
   #cart-icon {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #cc0000cc;
-    padding: 10px 14px;
-    border-radius: 50%;
-    color: white;
-    font-weight: 700;
-    font-size: 1.5rem;
-    cursor: pointer;
-    z-index: 300;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: fixed; top: 20px; right: 20px;
+    background: #cc0000cc; padding: 10px 14px;
+    border-radius: 50%; color: white;
+    font-weight: 700; font-size: 1.5rem;
+    cursor: pointer; z-index: 300;
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 10px #cc0000bb;
   }
   #cart-count {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    background: #ff4444;
-    border-radius: 50%;
-    padding: 4px 8px;
-    font-size: 1rem;
-    color: white;
-    font-weight: 900;
-    user-select: none;
-    min-width: 24px;
-    text-align: center;
+    position: absolute; top: -6px; right: -6px;
+    background: #ff4444; border-radius: 50%;
+    padding: 4px 8px; font-size: 1rem;
+    color: white; font-weight: 900;
+    min-width: 24px; text-align: center;
   }
-  /* Cart popup */
   #cart-popup {
-    position: fixed;
-    top: 60px;
-    right: 20px;
-    width: 320px;
-    max-height: 420px;
+    position: fixed; top: 60px; right: 20px;
+    width: 320px; max-height: 420px;
     background: rgba(20,20,20,0.95);
-    border-radius: 14px;
-    box-shadow: 0 0 30px #cc0000bb;
-    padding: 20px;
-    overflow-y: auto;
-    z-index: 350;
-    display: none;
-    flex-direction: column;
+    border-radius: 14px; box-shadow: 0 0 30px #cc0000bb;
+    padding: 20px; overflow-y: auto;
+    z-index: 350; display: none; flex-direction: column;
   }
-  #cart-popup h3 {
-    color: #cc0000;
-    margin-bottom: 16px;
-    text-align: center;
-  }
-  #cart-items {
-    flex-grow: 1;
-    overflow-y: auto;
-    color: #ddd;
-    font-size: 1.1rem;
-  }
-  #cart-items div {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  #cart-total {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-top: 14px;
-    text-align: right;
-    color: #ff4444;
-  }
+  #cart-popup h3 { color: #cc0000; margin-bottom: 16px; text-align: center; }
+  #cart-items { flex-grow: 1; overflow-y: auto; color: #ddd; font-size: 1.1rem; }
+  #cart-items div { display: flex; justify-content: space-between; margin-bottom: 12px; }
+  #cart-total { font-size: 1.4rem; font-weight: 700; margin-top: 14px; text-align: right; color: #ff4444; }
   #checkout-btn-popup {
-    margin-top: 20px;
-    background: #cc0000;
-    border: none;
-    padding: 14px 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: white;
-    border-radius: 12px;
-    cursor: pointer;
+    margin-top: 20px; background: #cc0000; border: none;
+    padding: 14px 0; font-size: 1.2rem; font-weight: 700;
+    color: white; border-radius: 12px; cursor: pointer;
     transition: background 0.3s ease;
   }
-  #checkout-btn-popup:disabled {
-    background: #555;
-    color: #bbb;
-    cursor: not-allowed;
-  }
-  #checkout-btn-popup:hover:not(:disabled) {
-    background: #990000;
-  }
-  /* Modal */
-  #modal-overlay {
-    display:none;
-    position:fixed;
-    z-index:400;
-    left:0; top:0; right:0; bottom:0;
-    background:rgba(0,0,0,0.75);
-    backdrop-filter:blur(4px);
-    align-items:center;
-    justify-content:center;
-  }
-  #modal {
-    background:#222;
-    padding:32px 28px;
-    border-radius:16px;
-    box-shadow:0 0 30px #cc0000bb;
-    max-width:400px;
-    color:#ff4444;
-    text-align:center;
-  }
-  #modal h2 {
-    margin-top:0;
-    margin-bottom:16px;
-    font-size:2rem;
-    color:#ff4444;
-  }
-  #modal p {
-    font-size:1.2rem;
-    margin-bottom:24px;
-  }
-  #modal button {
-    background:#cc0000;
-    border:none;
-    padding:12px 24px;
-    border-radius:12px;
-    font-weight:700;
-    font-size:1.1rem;
-    color:white;
-    cursor:pointer;
-    transition:background 0.3s ease;
-  }
-  #modal button:hover {
-    background:#990000;
-  }
-  footer {
-    margin-top: 60px;
-    padding: 20px;
-    text-align: center;
-    font-size: 1rem;
-    color: #cc0000;
-    letter-spacing: 1.2px;
-  }
-  footer a {
-    color: #cc0000;
-    text-decoration: underline;
-    font-weight: 700;
-  }
-  /* Scrollbars */
-  #cart-items::-webkit-scrollbar {
-    width: 8px;
-  }
-  #cart-items::-webkit-scrollbar-track {
-    background: #111;
-  }
-  #cart-items::-webkit-scrollbar-thumb {
-    background: #990000bb;
-    border-radius: 6px;
-  }
-  /* Responsive */
-  @media (max-width: 480px) {
-    header h1 {
-      font-size: 2.4rem;
-    }
-    #dashboard-section {
-      max-width: 90vw;
-    }
-    #cart-popup {
-      width: 90vw;
-      right: 5vw;
-    }
-  }
+  #checkout-btn-popup:hover { background: #990000; }
+  footer { margin-top: 60px; padding: 20px; text-align: center;
+    font-size: 1rem; color: #cc0000; letter-spacing: 1.2px; }
+  footer a { color: #cc0000; text-decoration: underline; font-weight: 700; }
 </style>
 </head>
 <body>
-  <div id="app" aria-live="polite">
-
+  <div id="app">
     <header>
       <h1>🛒 restrict rp Store</h1>
-      <p>🔥 All items currently out of stock — stay tuned for restocks!</p>
+      <p>🔥 All items are now in stock — shop now!</p>
       <input type="search" id="search-bar" placeholder="Search items..." aria-label="Search store items" />
     </header>
 
-    <!-- User Dashboard -->
-    <section id="dashboard-section" aria-label="User Dashboard">
+    <section id="dashboard-section">
       <h2>Welcome, <span id="user-display"></span>!</h2>
       <button id="logout-btn">Logout</button>
     </section>
 
-    <!-- Products -->
-    <section class="products" aria-label="Products for sale">
-
-      <div class="card" data-name="1,000 Coins" data-desc="Buy big stacks for your grind.">
-        <span class="out-of-stock">Out of Stock</span>
+    <section class="products">
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="1,000 Coins" />
         <h2>💰 1,000 Coins – $10</h2>
         <p>Buy big stacks for your grind.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="2,000 Coins" data-desc="Double the fun, double the coins.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="2,000 Coins" />
         <h2>💰 2,000 Coins – $20</h2>
         <p>Double the fun, double the coins.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="3,000 Coins" data-desc="Get more coins for your RP adventures.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="3,000 Coins" />
         <h2>💰 3,000 Coins – $30</h2>
         <p>Get more coins for your RP adventures.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="4,000 Coins" data-desc="Step up your game with more coins.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="4,000 Coins" />
         <h2>💰 4,000 Coins – $40</h2>
         <p>Step up your game with more coins.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="5,000 Coins" data-desc="Big coin bundle for serious grinders.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="5,000 Coins" />
         <h2>💰 5,000 Coins – $50</h2>
         <p>Big coin bundle for serious grinders.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <!-- Gang Tier Items -->
-
-      <div class="card" data-name="Gang Tier 1" data-desc="Access exclusive gang tier items and perks.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="Gang Tier 1" />
         <h2>🔥 Gang Tier 1 – $10</h2>
         <p>Access exclusive gang tier items and perks.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="Gang Tier 2" data-desc="Better perks and exclusive items.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="Gang Tier 2" />
         <h2>🔥 Gang Tier 2 – $20</h2>
         <p>Better perks and exclusive items.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="Gang Tier 3" data-desc="Top tier gang exclusives and perks.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="Gang Tier 3" />
         <h2>🔥 Gang Tier 3 – $30</h2>
         <p>Top tier gang exclusives and perks.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <!-- Old gun and custom items from original store -->
-
-      <div class="card" data-name="Glock Drum w/ Switch + Beam" data-desc="Upgrade your street loadout. No cap.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="Glock Drum" />
         <h2>🔫 Glock Drum w/ Switch + Beam – $10</h2>
         <p>Upgrade your street loadout. No cap.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="Blue Glock w/ Switch (2 pcs + 10k Ammo)" data-desc="Clean & custom for your RP grind.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="Blue Glock" />
         <h2>🔵 Blue Glock w/ Switch (2 pcs + 10k Ammo) – $5</h2>
         <p>Clean & custom for your RP grind.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="Custom Drug" data-desc="Create your own custom drug to sell or use in RP.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="Custom Drug" />
         <h2>💊 Custom Drug – $30</h2>
         <p>Create your own custom drug to sell or use in RP.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="4 Piece Custom Clothing" data-desc="Get unique clothes made for your style.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="4 Piece Custom Clothing" />
         <h2>👕 4 Piece Custom Clothing – $15</h2>
         <p>Get unique clothes made for your style.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
 
-      <div class="card" data-name="Custom Personal Gun" data-desc="Your personal custom gun, designed by you.">
-        <span class="out-of-stock">Out of Stock</span>
+      <div class="card">
         <img src="https://i.imgur.com/XllY0Ht.jpeg" alt="Custom Personal Gun" />
         <h2>🔫 Custom Personal Gun – $50</h2>
         <p>Your personal custom gun, designed by you.</p>
-        <button class="buy-button" disabled>Add to Cart</button>
+        <button class="buy-button">Add to Cart</button>
       </div>
-
     </section>
-
   </div>
 
-  <!-- Cart icon top right -->
-  <div id="cart-icon" aria-label="Shopping cart" role="button" tabindex="0" title="Open Cart">
-    🛒<div id="cart-count" aria-live="polite" aria-atomic="true">0</div>
-  </div>
+  <div id="cart-icon">🛒<div id="cart-count">0</div></div>
 
-  <!-- Cart popup -->
-  <div id="cart-popup" role="dialog" aria-modal="true" aria-labelledby="cart-popup-title">
-    <h3 id="cart-popup-title">Your Cart</h3>
-    <div id="cart-items" tabindex="0" aria-live="polite" aria-atomic="true">
-      <p>Your cart is empty.</p>
-    </div>
+  <div id="cart-popup">
+    <h3>Your Cart</h3>
+    <div id="cart-items"><p>Your cart is empty.</p></div>
     <div id="cart-total">Total: $0</div>
     <button id="checkout-btn-popup" disabled>Checkout</button>
   </div>
 
   <footer>
-    &copy; 2025 restrict rp — Join our Discord for support and updates: 
-    <a href="" target="_blank" rel="noopener noreferrer">
-   
-    </a>
+    &copy; 2025 restrict rp — Join our Discord for support and updates
   </footer>
 
 <script>
-  // Sample user data for demo
-  const mockUser = {
-    username: "",
-    loggedIn: false,
-    loggedUsernames: new Set(), // to store used usernames for 'in use' check
-  };
-
-  // Elements
   const app = document.getElementById('app');
-  const dashboard = document.getElementById('dashboard-section');
-  const userDisplay = document.getElementById('user-display');
-  const logoutBtn = document.getElementById('logout-btn');
-
-  // Cart
   const cartIcon = document.getElementById('cart-icon');
   const cartCount = document.getElementById('cart-count');
   const cartPopup = document.getElementById('cart-popup');
   const cartItemsContainer = document.getElementById('cart-items');
   const checkoutBtn = document.getElementById('checkout-btn-popup');
 
-  // Store products from DOM
   const productCards = document.querySelectorAll('.card');
   const products = [];
   productCards.forEach((card, idx) => {
@@ -670,20 +265,11 @@
     const priceMatch = title.match(/\$(\d+)/);
     const price = priceMatch ? Number(priceMatch[1]) : 0;
     const imgSrc = card.querySelector('img')?.src || '';
-    const outOfStock = !!card.querySelector('.out-of-stock');
-    products.push({
-      id: idx,
-      title,
-      price,
-      imgSrc,
-      outOfStock,
-      card,
-    });
+    products.push({ id: idx, title, price, imgSrc, card });
   });
 
   let cart = [];
 
-  // Functions
   function updateCartCount() {
     cartCount.textContent = cart.reduce((acc, item) => acc + item.quantity, 0);
   }
@@ -710,7 +296,6 @@
   }
 
   function addToCart(product) {
-    if(product.outOfStock) return;
     const found = cart.find(item => item.id === product.id);
     if(found) {
       found.quantity++;
@@ -721,90 +306,26 @@
     renderCartItems();
   }
 
-  // Initialize buttons
   products.forEach(product => {
     const btn = product.card.querySelector('.buy-button');
-    if(!product.outOfStock) {
-      btn.classList.add('enabled');
-      btn.disabled = false;
-      btn.addEventListener('click', () => {
-        addToCart(product);
-      });
-    }
+    btn.addEventListener('click', () => addToCart(product));
   });
 
   cartIcon.addEventListener('click', () => {
     cartPopup.style.display = cartPopup.style.display === 'flex' ? 'none' : 'flex';
-  });
-
-  cartIcon.addEventListener('keypress', e => {
-    if(e.key === 'Enter' || e.key === ' ') {
-      cartIcon.click();
-    }
+    cartPopup.style.flexDirection = 'column';
   });
 
   checkoutBtn.addEventListener('click', () => {
     alert('Checkout not implemented. Please make a ticket on Discord to complete your purchase.');
   });
 
-  // Login system simulation with username uniqueness check
-  const loginBtn = document.getElementById('login-btn');
-  const usernameInput = document.getElementById('username-input');
-  const passwordInput = document.getElementById('password-input');
-  const blurMessage = document.getElementById('blur-message');
-
-  loginBtn.addEventListener('click', () => {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-    if(username === '' || password === '') {
-      blurMessage.textContent = 'Please enter username and password.';
-      return;
-    }
-    if(mockUser.loggedUsernames.has(username)) {
-      blurMessage.textContent = 'Username is already in use. Please choose another.';
-      return;
-    }
-    // Accept any username/password as valid if not already used
-    mockUser.username = username;
-    mockUser.loggedIn = true;
-    mockUser.loggedUsernames.add(username);
-    blurOverlay.style.display = 'none';
-    app.style.filter = 'none';
-    dashboard.style.display = 'block';
-    userDisplay.textContent = mockUser.username;
-    blurMessage.textContent = '';
-  });
-
-  logoutBtn.addEventListener('click', () => {
-    mockUser.loggedIn = false;
-    blurOverlay.style.display = 'flex';
-    app.style.filter = 'blur(6px)';
-    dashboard.style.display = 'none';
-    userDisplay.textContent = '';
-    usernameInput.value = '';
-    passwordInput.value = '';
-    blurMessage.textContent = '';
-  });
-
-  // On load
-  if(!mockUser.loggedIn) {
-    blurOverlay.style.display = 'flex';
-    app.style.filter = 'blur(6px)';
-  } else {
-    blurOverlay.style.display = 'none';
-    app.style.filter = 'none';
-    dashboard.style.display = 'block';
-    userDisplay.textContent = mockUser.username;
-  }
-
-  // Search filtering
   const searchBar = document.getElementById('search-bar');
   searchBar.addEventListener('input', () => {
     const query = searchBar.value.toLowerCase().trim();
     products.forEach(product => {
-      const name = product.card.getAttribute('data-name').toLowerCase();
-      const desc = product.card.getAttribute('data-desc').toLowerCase();
-      if(name.includes(query) || desc.includes(query)) {
+      const text = product.title.toLowerCase();
+      if(text.includes(query)) {
         product.card.style.display = '';
       } else {
         product.card.style.display = 'none';
