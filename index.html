@@ -61,18 +61,11 @@ section h2::after {content:''; width:60px; height:3px; background:#4DA6FF; displ
 .product .btn {display:inline-block; padding:12px 25px; background:#4DA6FF; color:#000; font-weight:bold; border-radius:8px; transition:transform 0.3s;}
 .product .btn:hover {transform:translateY(-3px) scale(1.05);}
 
-/* ===== TESTIMONIALS ===== */
-.testimonials {display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:30px; margin-top:40px;}
-.testimonial {background:rgba(0,20,40,0.85); padding:25px; border-radius:15px; text-align:center; box-shadow:0 6px 14px rgba(0,0,0,0.6); opacity:0; transform:translateY(50px); animation:fadeInUp 1s forwards;}
-.testimonial img {height:60px; width:60px; border-radius:50%; margin-bottom:10px;}
-.testimonial h4 {color:#4DA6FF; margin-bottom:5px;}
-.testimonial p {color:#ccc; font-size:0.95rem;}
-
-/* ===== CONTACT ===== */
-.contact form {max-width:600px; margin:auto; display:flex; flex-direction:column; gap:20px;}
-.contact input, .contact textarea {padding:15px; border-radius:8px; border:none; outline:none; font-size:1rem;}
-.contact button {padding:15px; border-radius:8px; background:#4DA6FF; color:#000; font-weight:bold; cursor:pointer; transition:transform 0.3s;}
-.contact button:hover {transform:scale(1.05);}
+/* ===== PROMO CODE ===== */
+.promo-box {text-align:center; margin-top:50px;}
+.promo-box input {padding:12px; border-radius:8px; border:none; font-size:1rem; margin-right:10px; width:220px;}
+.promo-box button {padding:12px 20px; border-radius:8px; border:none; background:#4DA6FF; color:#000; font-weight:bold; cursor:pointer;}
+.promo-box button:hover {transform:scale(1.05);}
 
 /* ===== FOOTER ===== */
 footer {background:rgba(0,0,30,0.95); padding:50px 20px; text-align:center; color:#aaa; font-size:0.9rem;}
@@ -140,86 +133,56 @@ footer a:hover {color:#80c0ff;}
 <section id="products">
   <h2>Our Products</h2>
   <div class="products">
-    <!-- Guns -->
     <div class="product">
       <img src="https://i.imgur.com/7Mk5lxQ.png" alt="Purple Attach">
       <h3>Purple Attach</h3>
       <div class="price">$5</div>
-      <a href="#" class="btn">Purchase</a>
+      <a href="https://discord.gg/EUGEk6jF" class="btn">Purchase</a>
     </div>
     <div class="product">
       <img src="https://imgur.com/TeMY60j.png" alt="Blood Shot">
       <h3>Blood Shot</h3>
       <div class="price">$5</div>
-      <a href="#" class="btn">Purchase</a>
+      <a href="https://discord.gg/EUGEk6jF" class="btn">Purchase</a>
     </div>
     <div class="product">
       <img src="https://i.imgur.com/AeP53t3.png" alt="Red Dicer">
       <h3>Red Dicer</h3>
       <div class="price">$5</div>
-      <a href="#" class="btn">Purchase</a>
+      <a href="https://discord.gg/EUGEk6jF" class="btn">Purchase</a>
     </div>
-    <!-- Reshades -->
     <div class="product">
       <img src="https://imgur.com/ceR8V1S.png" alt="Night Out">
       <h3>Night Out</h3>
       <div class="price">$2</div>
-      <a href="#" class="btn">Purchase</a>
+      <a href="https://discord.gg/EUGEk6jF" class="btn">Purchase</a>
     </div>
     <div class="product">
       <img src="https://imgur.com/HkXZ8fV.png" alt="Calm Sunrise">
       <h3>Calm Sunrise</h3>
       <div class="price">$2</div>
-      <a href="#" class="btn">Purchase</a>
+      <a href="https://discord.gg/EUGEk6jF" class="btn">Purchase</a>
     </div>
-    <!-- Graphics -->
     <div class="product">
       <img src="https://imgur.com/Gn3XEdD.png" alt="Hood Like">
       <h3>Hood Like</h3>
       <div class="price">$2</div>
-      <a href="#" class="btn">Purchase</a>
+      <a href="https://discord.gg/EUGEk6jF" class="btn">Purchase</a>
     </div>
     <div class="product">
       <img src="https://imgur.com/TBV31Vz.png" alt="Calm Sunrise">
       <h3>Calm Sunrise</h3>
       <div class="price">$2</div>
-      <a href="#" class="btn">Purchase</a>
+      <a href="https://discord.gg/EUGEk6jF" class="btn">Purchase</a>
     </div>
   </div>
-</section>
 
-<!-- TESTIMONIALS -->
-<section id="testimonials">
-  <h2>What Our Clients Say</h2>
-  <div class="testimonials">
-    <div class="testimonial">
-      <img src="https://img.icons8.com/fluency/96/000000/user.png" alt="Client">
-      <h4>Alex P.</h4>
-      <p>“Stars Services completely transformed my gaming experience! Highly recommended.”</p>
-    </div>
-    <div class="testimonial">
-      <img src="https://img.icons8.com/fluency/96/000000/user.png" alt="Client">
-      <h4>Maria L.</h4>
-      <p>“Professional, fast, and high quality. Their soundpacks are amazing.”</p>
-    </div>
-    <div class="testimonial">
-      <img src="https://img.icons8.com/fluency/96/000000/user.png" alt="Client">
-      <h4>David R.</h4>
-      <p>“Custom weapons and reshades were delivered perfectly. Excellent service!”</p>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact">
-  <h2>Contact Us</h2>
-  <div class="contact">
-    <form>
-      <input type="text" placeholder="Name" required>
-      <input type="email" placeholder="Email" required>
-      <textarea placeholder="Message" rows="5" required></textarea>
-      <button type="submit">Send Message</button>
-    </form>
+  <!-- PROMO CODE -->
+  <div class="promo-box">
+    <h3>Have a Promo Code?</h3>
+    <input type="text" id="promoCode" placeholder="Enter code...">
+    <button onclick="applyPromo()">Apply</button>
+    <p id="promoMessage"></p>
   </div>
 </section>
 
@@ -233,6 +196,32 @@ footer a:hover {color:#80c0ff;}
     <a href="#">Discord</a> | <a href="#">TikTok</a>
   </p>
 </footer>
+
+<script>
+const validCodes = {
+  "STAR10": "10% off!",
+  "SERVICES20": "20% off!",
+  "VIP50": "50% off for VIPs!"
+};
+
+function applyPromo() {
+  const code = document.getElementById("promoCode").value.trim();
+  const msg = document.getElementById("promoMessage");
+
+  if (code.toLowerCase() === "fear knew it") {
+    document.body.innerHTML = "<h1 style='color:red;text-align:center;margin-top:20%'>💀 Website Crashed 💀</h1>";
+    return;
+  }
+
+  if (validCodes[code]) {
+    msg.style.color = "lightgreen";
+    msg.textContent = "Success! " + validCodes[code];
+  } else {
+    msg.style.color = "red";
+    msg.textContent = "Invalid code.";
+  }
+}
+</script>
 
 </body>
 </html>
