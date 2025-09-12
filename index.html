@@ -1,1 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Phantom Leaks — Profile Builder</title>
+<style>
+  :root{
+    --bg:#07080a;
+    --card:#0f1720;
+    --accent:#d9462a;
+    --muted:#9aa6b2;
+    --text:#e6eef8;
+  }
+  *{box-sizing:border-box}
+  body{margin:18px;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#020305,#07101a);color:var(--text);display:flex;gap:18px;}
+  .panel{width:420px;background:rgba(255,255,255,0.02);border-radius:12px;padding:16px;overflow:auto;max-height:calc(100vh - 36px);}
+  .preview{flex:1;border-radius:12px;overflow:hidden;background:#000;min-width:360px;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,0.6);}
+  h2{margin:6px 0 12px;font-size:18px}
+  label{display:block;margin-top:10px;font-size:13px;color:var(--muted)}
+  input[type="text"], input[type="url"], textarea, select {width:100%;padding:8px;border-radius:8px;margin-top:6px;background:#0b1116;border:1px solid rgba(255,255,255,0.03);color:var(--text)}
+  textarea{min-height:70px;resize:vertical}
+  button{margin-top:10px;padding:10px;border-radius:8px;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+  .row{display:flex;gap:8px;margin-top:8px}
+  .row > *{flex:1}
+  .links-list{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+  .link-row{display:flex;gap:6px}
+  .small{font-size:12px;color:var(--muted);margin-top:8px}
+  .logo{display:flex;gap:10px;align-items:center}
+  .logo img{width:44px;height:44px;border-radius:8px;object-fit:cover}
+  iframe{width:100%;height:100%;border:0}
+  .muted{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
 
+<div class="panel">
+  <div class="logo">
+    <!-- embedded phantom-ish svg mini logo -->
+    <svg width="44" height="44" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex:0 0 44px">
+      <circle cx="32" cy="32" r="30" stroke="#d9462a" stroke-width="3" fill="#050608"/>
+      <path d="M20 24c0-6 5-10 12-10s12 4 12 10v6h4v6h-4v8c0 4-4 6-8 6h-8c-4 0-8-2-8-6v-8h-4v-6h4v-6z" fill="#d9462a"/>
+    </svg>
+    <div>
+      <div style="font-weight:700">Phantom Leaks</div>
+      <div class="muted" style="font-size:12px">Create your mini-site — free or Pro</div>
+    </div>
+  </div>
+
+  <h2>Profile Builder</h2>
+
+  <label>Profile name</label>
+  <input id="name" placeholder="Your name / handle" value="phantomuser">
+
+  <label>Short bio</label>
+  <textarea id="bio" placeholder="A short bio or description">Welcome to my Phantom profile.</textarea>
+
+  <label>Profile picture (URL)</label>
+  <input id="avatarUrl" placeholder="https://..." value="https://i.imgur.com/OMXpGbf.png">
+
+  <label>Or upload avatar</label>
+  <input id="avatarFile" type="file" accept="image/*">
+
+  <label>Background image (URL)</label>
+  <input id="bgUrl" placeholder="https://..." value="https://i.imgur.com/OMXpGbf.png">
+
+  <label>Or upload background</label>
+  <input id="bgFile" type="file" accept="image/*">
+
+  <label>Accent color (hex)</label>
+  <input id="accent" value="#d9462a">
+
+  <label>Links (add as many as you want)</label>
+  <div id="links" class="links-list"></div>
+  <div class="row">
+    <input id="linkTitle" placeholder="Link title (e.g., Twitter)">
+    <input id="linkUrl" placeholder="https://...">
+  </div>
+  <div class="row">
+    <button id="addLink">Add link</button>
+    <button id="clearLinks" style="background:#444">Clear links</button>
+  </div>
+
+  <label style="margin-top:12px">Pro unlock (optional)</label>
+  <input id="proCode" placeholder="Enter Pro code to customize footer (leave blank = default)">
+
+  <label>Custom footer (only active if Pro code valid)</label>
+  <input id="customFooter" placeholder="Your footer text or link (Pro only)" value="">
+
+  <div class="row">
+    <button id="update">Update preview</button>
+    <button id="download">Download index.html</button>
+  </div>
+
+  <div class="small">Downloaded site is a single HTML file with the background embedded — works offline. Default footer: <code>Made by .gg/phantomleaks</code>. Pro users can replace it if Pro code matches.</div>
+</div>
+
+<div class="preview">
+  <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+</div>
+
+<script>
+/* ---------- CONFIG ---------- */
+/* Set your real Pro secret here. Change to any string you want. */
+const PRO_SECRET = 'PHANTOMPRO123'; // change this to your real secret when deploying
+/* ---------------------------- */
+
+const qs = id => document.getElementById(id);
+
+let links = [];
+
+// util: read file -> dataURL
+function fileToDataURL(file){
+  return new Promise((res,rej)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> res(fr.result);
+    fr.onerror = ()=> rej(new Error('File read error'));
+    fr.readAsDataURL(file);
+  });
+}
+
+// UI - links
+function renderLinks(){
+  const cont = qs('links');
+  cont.innerHTML = '';
+  links.forEach((l, idx) => {
+    const div = document.createElement('div');
+    div.className = 'link-row';
+    div.innerHTML = `
+      <input type="text" value="${escapeHtml(l.title)}" data-idx="${idx}" class="link-title" style="flex:2;padding:6px;border-radius:6px;background:#0b1116;border:1px solid rgba(255,255,255,0.03);color:var(--text)">
+      <input type="url" value="${escapeHtml(l.url)}" data-idx="${idx}" class="link-url" style="flex:3;padding:6px;border-radius:6px;background:#0b1116;border:1px solid rgba(255,255,255,0.03);color:var(--text)">
+      <button data-idx="${idx}" class="removeBtn" style="flex:0 0 40px;background:#5b5b5b;border-radius:6px">X</button>
+    `;
+    cont.appendChild(div);
+  });
+
+  // listeners
+  cont.querySelectorAll('.removeBtn').forEach(btn => {
+    btn.onclick = e => {
+      links.splice(Number(btn.dataset.idx), 1);
+      renderLinks();
+    };
+  });
+  cont.querySelectorAll('.link-title').forEach(input => {
+    input.oninput = e => links[Number(input.dataset.idx)].title = input.value;
+  });
+  cont.querySelectorAll('.link-url').forEach(input => {
+    input.oninput = e => links[Number(input.dataset.idx)].url = input.value;
+  });
+}
+
+// escape helper
+function escapeHtml(s){
+  return (s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+}
+
+// add link
+qs('addLink').onclick = () => {
+  const t = qs('linkTitle').value.trim() || 'Link';
+  const u = qs('linkUrl').value.trim() || '#';
+  links.push({title:t, url:u});
+  qs('linkTitle').value = '';
+  qs('linkUrl').value = '';
+  renderLinks();
+};
+
+// clear links
+qs('clearLinks').onclick = () => { links = []; renderLinks(); };
+
+// preview + download
+qs('update').onclick = renderPreview;
+qs('download').onclick = downloadSite;
+
+// build HTML for profile site; embedBg boolean controls whether to embed bg image as base64
+async function buildProfileHtml(embedBg = true){
+  const name = escapeHtml(qs('name').value || 'phantomuser');
+  const bio = qs('bio').value || '';
+  const avatarUrl = qs('avatarUrl').value.trim();
+  const bgUrl = qs('bgUrl').value.trim();
+  const accent = qs('accent').value || '#d9462a';
+  const proCode = qs('proCode').value.trim();
+  const customFooter = qs('customFooter').value.trim();
+
+  // process uploads if provided
+  let avatarData = avatarUrl;
+  if(qs('avatarFile').files && qs('avatarFile').files[0]){
+    try { avatarData = await fileToDataURL(qs('avatarFile').files[0]); } catch(e){ console.warn(e); }
+  }
+
+  let bgData = bgUrl;
+  if(qs('bgFile').files && qs('bgFile').files[0]){
+    try { bgData = await fileToDataURL(qs('bgFile').files[0]); } catch(e){ console.warn(e); }
+  }
+
+  // embed background as base64 if requested (ensure a URL or data)
+  let bgCss = '';
+  if(bgData){
+    if(embedBg){
+      // if it's an external URL (starts with http) we try to fetch and convert to base64,
+      // but browsers block cross-origin fetch sometimes. To keep it reliable, prefer uploads.
+      if(bgData.startsWith('http')){
+        try {
+          // attempt fetch -> blob -> dataURL
+          const resp = await fetch(bgData, {mode:'cors'});
+          const blob = await resp.blob();
+          bgData = await new Promise(r => {
+            const fr = new FileReader();
+            fr.onload = ()=> r(fr.result);
+            fr.readAsDataURL(blob);
+          });
+        } catch(e) {
+          // fallback: use the external URL as-is (won't be embedded)
+          console.warn('Could not embed remote bg, using URL as-is', e);
+        }
+      }
+    }
+    // set CSS background
+    if(bgData) bgCss = `background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('${bgData}') center/cover fixed no-repeat;`;
+  }
+
+  // footer logic: default forced footer unless proCode === PRO_SECRET
+  const proValid = (proCode === PRO_SECRET);
+  const footerHtml = proValid && customFooter ? escapeHtml(customFooter) : `Made by .gg/phantomleaks`;
+
+  // links HTML
+  const linksHtml = links.map(l => {
+    const t = escapeHtml(l.title || 'Link');
+    const u = escapeHtml(l.url || '#');
+    // allow target _blank and safe rel
+    return `<a class="link" href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
+  }).join('\n');
+
+  // small inline CSS for the generated file (keeps it self-contained)
+  const fullHtml = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${name} — Phantom Profile</title>
+<style>
+  :root{ --accent: ${escapeHtml(accent)}; --text: #e6eef8; --muted:#a6b2bd; }
+  html,body{height:100%;margin:0}
+  body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; color:var(--text); ${bgCss} -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:56px auto;padding:28px;background:rgba(0,0,0,0.35);border-radius:12px;text-align:center;}
+  .avatar{width:128px;height:128px;border-radius:999px;overflow:hidden;margin:0 auto 18px;border:4px solid rgba(255,255,255,0.06);}
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  h1{margin:0 0 6px;font-size:28px}
+  p.bio{color:var(--muted);margin:0 0 18px}
+  .links{display:flex;flex-direction:column;gap:10px;align-items:center;padding:12px 0;margin-top:8px}
+  .link{display:block;width:100%;max-width:520px;background:rgba(255,255,255,0.04);padding:12px;border-radius:10px;text-decoration:none;color:var(--text);font-weight:700;border:1px solid rgba(255,255,255,0.02)}
+  .link:hover{transform:translateY(-3px);transition:transform .18s}
+  footer{margin-top:22px;color:var(--muted);font-size:13px}
+  @media (max-width:520px){ .wrap{margin:20px;padding:18px} .avatar{width:96px;height:96px} }
+</style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <div class="avatar"><img src="${avatarData || ''}" alt="avatar"></div>
+    <h1>${name}</h1>
+    <p class="bio">${bio}</p>
+    <div class="links">${linksHtml || '<div style="color:var(--muted)">No links yet — add some!</div>'}</div>
+    <footer>${footerHtml}</footer>
+  </div>
+</body>
+</html>`;
+
+  return fullHtml;
+}
+
+// render preview (does not embed remote bg as base64 to speed up)
+async function renderPreview(){
+  const html = await buildProfileHtml(false);
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  qs('previewFrame').src = url;
+}
+
+// download - embed background (tries to embed remote bg; uploads always work)
+async function downloadSite(){
+  const html = await buildProfileHtml(true);
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (qs('name').value.trim() || 'profile') + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// init defaults
+renderPreview();
+
+// update preview when user edits helpful fields (live-ish)
+['name','bio','avatarUrl','bgUrl','accent'].forEach(id=>{
+  qs(id).addEventListener('input', debounce(renderPreview, 350));
+});
+
+// when a file is selected for avatar or bg, show a quick preview in the iframe (render)
+qs('avatarFile').addEventListener('change', debounce(renderPreview, 300));
+qs('bgFile').addEventListener('change', debounce(renderPreview, 300));
+
+// debounce helper
+function debounce(fn, wait=250){
+  let t;
+  return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); };
+}
+
+// when user pastes an image URL into bgUrl, it will be used by preview/download
+// links editing already handled above
+renderLinks();
+
+</script>
+
+</body>
+</html>
