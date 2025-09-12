@@ -1,2 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phantom Leaks Media Sender</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('https://i.imgur.com/OMXpGbf.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      cursor: pointer;
+      background-color: #ff0000;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Phantom Leaks Media Sender</h1>
+  <p>Enter your Discord Webhook URL below:</p>
+  <input type="text" id="webhook" placeholder="Webhook URL" size="50">
+  <br>
+  <button onclick="sendMedia()">Send Media</button>
 
+  <script>
+    async function sendMedia() {
+      const webhook = document.getElementById('webhook').value;
+      if (!webhook) {
+        alert("Please enter a webhook URL!");
+        return;
+      }
 
+      // Media lists
+      const pfps = [
+        "https://i.imgur.com/TayK_PFP1.jpg",
+        "https://i.imgur.com/LilJeff_PFP1.jpg",
+        "https://i.imgur.com/OsamaSon_PFP1.jpg",
+        "https://i.imgur.com/KenCarson_PFP1.jpg",
+        "https://i.imgur.com/LilUziVert_PFP1.jpg"
+      ];
+
+      const gifs = [
+        "https://giphy.com/gifs/lil-uzi-vert-dancing-3o6Zt7kz9VZ6z9zY5y",
+        "https://giphy.com/gifs/lil-uzi-vert-shoulder-roll-3o6Zt7kz9VZ6z9zY5y",
+        "https://giphy.com/gifs/lil-uzi-vert-rap-3o6Zt7kz9VZ6z9zY5y"
+      ];
+
+      const banners = [
+        "https://i.imgur.com/TayK_Banner1.jpg",
+        "https://i.imgur.com/LilJeff_Banner1.jpg",
+        "https://i.imgur.com/OsamaSon_Banner1.jpg",
+        "https://i.imgur.com/KenCarson_Banner1.jpg",
+        "https://i.imgur.com/LilUziVert_Banner1.jpg"
+      ];
+
+      const embeds = pfps.concat(gifs, banners).map(url => ({
+        image: { url: url }
+      }));
+
+      const payload = {
+        content: "Made by Phantom Leaks",
+        embeds: embeds
+      };
+
+      try {
+        const res = await fetch(webhook, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          alert("Media sent successfully!");
+        } else {
+          alert("Failed to send media. Make sure your webhook URL is valid.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error sending media.");
+      }
+    }
+  </script>
+
+  <footer style="margin-top:50px;">
+    <p>Made by <a href="https://.gg/phantomleaks" style="color:white;">.gg/phantomleaks</a></p>
+  </footer>
+
+</body>
+</html>
